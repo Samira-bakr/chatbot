@@ -18,7 +18,7 @@ import os
 # Replace these values with your actual SQL Server credentials
 server = 'LOCALHOST'
 database = 'REALESTATE'
-OPENAI_API_KEY = "sk-proj-HlzQnTbGrHupQ5IIBTyyT3BlbkFJi2jOsF0cluhi8vseaMht"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 # Create the connection string

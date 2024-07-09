@@ -3,7 +3,6 @@ from langchain.memory import ConversationBufferMemory
 from langchain_openai import OpenAI
 import os
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-#"sk-proj-HlzQnTbGrHupQ5IIBTyyT3BlbkFJi2jOsF0cluhi8vseaMht"
 from openai import RateLimitError
 import backoff
 
