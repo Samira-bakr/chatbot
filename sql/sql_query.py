@@ -7,7 +7,7 @@ from langchain_community.utilities.sql_database import SQLDatabase
 import pyodbc
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.callbacks import get_openai_callback
-from langchain_community.agent_toolkits.sql.prompt import SQL_FUNCTIONS_SUFFIX
+from langchain_community.agent_toolkits.sql.prompt import SQL_FUNCTIONS_SUFFIX,SQL_PREFIX
 from langchain_core.messages import AIMessage, SystemMessage
 from langchain_core.prompts.chat import (
     ChatPromptTemplate,
@@ -35,14 +35,22 @@ context = toolkit.get_context()
 tools = toolkit.get_tools()
 
 # Define the SQL suffix prompts
-SQL_SUFFIX1 = """Begin!\n\nQuestion: {input}\nThought:I should look at the tables in the database to see what I can query. Then I should query the schema of the most relevant tables. Ensure the query includes joins if needed to gather data from multiple tables.\n{agent_scratchpad}"""
+SQL_SUFFIX1 = """Begin!\n\nQuestion: {input} 
+\nThought:I should look at ALL the tables in the database to see what I can query and see each column relavant to each table.
+ Then I should query the schema of the most relevant tables.
+Ensure the query includes joins if needed to gather data from multiple tables.
+I must proceed all queries
+\n{agent_scratchpad}"""
 
 SQL_FUNCTIONS_SUFFIX1 = """ 
-I need to perform the following steps to answer the user's query effectively and only use SQL Server database system.:
+YOU have two types of questions:
+1- general questions (e.g., introductions, greetings, or other non-database-related topics), respond conversationally without querying the database.\n
+2- sql question: 
+YOU need to perform the following steps to answer the user's query effectively and only use SQL Server database system.:
+must go through all this steps
 
 1. **Paraphrase the Question for Clarity**:
     - Rephrase the user's question to ensure clarity and capture the intent accurately.
-    - if ask general question you respond with a general answer, for example, "hi" or "how are you."
 
 2. **Identify Relevant Tables**:
     - Look at the tables in the database to identify which tables are relevant to the question.
@@ -50,24 +58,20 @@ I need to perform the following steps to answer the user's query effectively and
 3. **Query the Schema**:
     - Examine the schema of the relevant tables to understand their structure and relationships.
 
-4. **Determine the Need for Joins**:
-    - Assess whether the question requires combining data from multiple tables.
-    - If joins are necessary, identify the keys and relationships to use in the join.
-
 5. **Construct the SQL Query**:
     - Write the SQL query using SQL Server syntax.
     - Ensure the query includes joins if needed to gather data from multiple tables.
 
 7. **Format the Results**:
-    - Present the query results in a clear and understandable format for the user. After I got the query I should go to SQL Server to proceed with the query and give the output as ANSWER.
+    - Present the query results in a clear and understandable format for the user. After obtaining the query, execute it on the SQL Server and provide the result (not the SQL query itself, but the actual output) as the ANSWER.
 
-Proceeding with these steps will ensure that I accurately understand and process the user's query, including handling joins and using the appropriate SQL Server syntax.
+Proceeding with these steps will ensure that I accurately understand and process the user's query, including handling joins and using the appropriate SQL Server syntax AND PROCEED THE SQL QUERY.
 """
-
+from typing import cast
 # Define the messages for the chat prompt template
 messages = [
     HumanMessagePromptTemplate.from_template("{input}"),
-    AIMessage(content=SQL_SUFFIX1 + SQL_FUNCTIONS_SUFFIX1),
+    AIMessage(content=SQL_FUNCTIONS_SUFFIX1),
     MessagesPlaceholder(variable_name="agent_scratchpad"),
 ]
 
@@ -81,10 +85,9 @@ from langchain.agents.agent import AgentExecutor
 
 # Initialize the language model
 llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0, openai_api_key=OPENAI_API_KEY)
-
+#gpt-3.5-turbo-0125
 # Create the agent using the language model, tools, and prompt
 agent = create_openai_tools_agent(llm, tools, prompt)
-
 # Define a function to execute the agent with a given message
 def agent_execute(msq):
     agent_executor = AgentExecutor(
@@ -95,10 +98,10 @@ def agent_execute(msq):
     return agent_executor.invoke({"input": msq})
 
 # Example query execution
-result = agent_execute("how are you?")
-#Mean Final Prices of New York Location with 3 Bedrooms
+result = agent_execute("hi")
+#Mean Final Prices of New York Bank Location with 3 Bedrooms
 #Comparing Capitalization Rates Across Property Types
-#Properties Built Before 2000 in New York and Not Occupied
+#Properties that HAS year Built year Before 2000 in New York and Not Occupied
 #Categorizing House Ages and Calculating Average Final Price
 #Getting Results for "Regex smith"
 #The Second Highest Final Price (Profit)
@@ -107,3 +110,4 @@ result = agent_execute("how are you?")
 #Calculates the total monthly salary and total current debts for each buyer.
 #Total Rental Income and Operating Expenses by Location
 #Properties with High Return on Investment
+#Properties that Built year Before 2000 in New York and Not Occupied
