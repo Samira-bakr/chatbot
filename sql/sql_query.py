@@ -18,8 +18,8 @@ import os
 # Replace these values with your actual SQL Server credentials
 server = 'LOCALHOST'
 database = 'REALESTATE'
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-#"sk-proj-HlzQnTbGrHupQ5IIBTyyT3BlbkFJi2jOsF0cluhi8vseaMht"
+OPENAI_API_KEY = "sk-proj-HlzQnTbGrHupQ5IIBTyyT3BlbkFJi2jOsF0cluhi8vseaMht"
+
 
 # Create the connection string
 connection_string = f"mssql+pyodbc://@{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server"
@@ -95,7 +95,7 @@ def agent_execute(msq):
     return agent_executor.invoke({"input": msq})
 
 # Example query execution
-#result = agent_execute("how are you?")
+result = agent_execute("how are you?")
 #Mean Final Prices of New York Location with 3 Bedrooms
 #Comparing Capitalization Rates Across Property Types
 #Properties Built Before 2000 in New York and Not Occupied
